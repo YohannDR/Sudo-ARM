@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ARM_Decoder
+namespace Sudo_ARM
 {
     static class Program
     {

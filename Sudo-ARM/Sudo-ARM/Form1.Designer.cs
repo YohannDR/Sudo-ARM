@@ -1,5 +1,5 @@
 ﻿
-namespace ARM_Decoder
+namespace Sudo_ARM
 {
     partial class Form1
     {
