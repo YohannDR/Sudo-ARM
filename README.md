@@ -1,6 +1,6 @@
 # Sudo-ARM
  
-### WIP ARM instruction set decoder for the GBA 
+### WIP software providing utilities for the GBA ARM instruction set
 
 ## Planned features
 - Decoding/Encoding of ARM and THUMB
