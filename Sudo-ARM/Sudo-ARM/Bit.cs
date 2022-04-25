@@ -13,6 +13,7 @@ namespace Sudo_ARM
         public static uint GetBits(uint value, byte bit, byte size)
             => (value >> (bit - size)) & (uint)(Math.Pow(2, size) - 1);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint SwitchEndian(uint value)
         {
             byte[] data = BitConverter.GetBytes(value);

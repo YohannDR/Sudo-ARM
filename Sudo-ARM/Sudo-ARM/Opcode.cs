@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Sudo_ARM
 {
@@ -233,9 +231,9 @@ namespace Sudo_ARM
         public byte Cycles;
         public byte Size;
         public CPUFlags AffectedFlags;
-        public byte? RegD;
-        public byte? RegS;
-        public byte? RegR;
+        public byte RegD;
+        public byte RegS;
+        public byte RegR;
         public byte[] RegList;
         public ushort? Immediate;
 
@@ -267,19 +265,19 @@ namespace Sudo_ARM
                     return OpcodeType.Immediate;
 
                 case 2: // 0b010
-                    if (Bit.GetBit(Value, 29) == 1)
+                    if (Bit.GetBit(Value, 28) == 1)
                         return OpcodeType.LoadStoreReg;
-                    else if (Bit.GetBit(Value, 27) == 1)
+                    else if (Bit.GetBit(Value, 28) == 1)
                         return OpcodeType.LoadPC;
                     else if (Bit.GetBit(Value, 26) == 1)
                     {
-                        if (Bit.GetBits(Value, 26, 2) == 3)
+                        if (Bit.GetBits(Value, 27, 3) == 7)
                             return OpcodeType.BranchRegister;
                         else
-                            return OpcodeType.Arithmetic;
+                            return OpcodeType.HiRegister;
                     }
                     else
-                        return OpcodeType.HiRegister;
+                        return OpcodeType.Arithmetic;
 
                 case 3: // 0b011
                     return OpcodeType.LoadStoreImmediate;
@@ -291,7 +289,7 @@ namespace Sudo_ARM
                         return OpcodeType.LoadStoreSP;
 
                 case 5: // 0b101
-                    if (Bit.GetBit(Value, 29) == 0)
+                    if (Bit.GetBit(Value, 28) == 0)
                         return OpcodeType.AddPCSP;
                     else
                     {
@@ -520,32 +518,33 @@ namespace Sudo_ARM
             }
         }
 
-        public ushort? GetImmediate()
+        public ushort GetImmediate()
         {
             switch (Type)
             {
                 case OpcodeType.AddSub:
                     if (SubType == SubOpcodeType.addRR || SubType == SubOpcodeType.subRR)
-                        return null;
+                        return 0;
                     else
-                        return (ushort?)Bit.GetBits(Value, 24, 3);
+                        return (ushort)Bit.GetBits(Value, 24, 3);
 
                 case OpcodeType.LoadStoreImmediate:
                 case OpcodeType.LoadStoreHalf:
                 case OpcodeType.Shift:
-                    return (ushort?)Bit.GetBits(Value, 27, 5);
+                    return (ushort)Bit.GetBits(Value, 27, 5);
                 case OpcodeType.Immediate:
                 case OpcodeType.LoadPC:
                 case OpcodeType.LoadStoreSP:
-                case OpcodeType.AddSP:
                 case OpcodeType.CondBranch:
                 case OpcodeType.Interrupt:
-                    return (ushort?)((Value & 0xFF0000) >> 16);
+                    return (ushort)((Value & 0xFF0000) >> 16);
+                case OpcodeType.AddSP:
+                    return (ushort)(Bit.GetBits(Value, 23, 7));
                 case OpcodeType.Branch:
                 case OpcodeType.BranchLink:
-                    return (ushort?)((Value & 0x7FF0000) >> 16);
+                    return (ushort)((Value & 0x7FF0000) >> 16);
                 default:
-                    return null;
+                    return 0;
             }
         }
 
@@ -586,76 +585,75 @@ namespace Sudo_ARM
             }
         }
 
-        public byte? GetRegS()
+        public byte GetRegS()
         {
             switch (Type)
             {
                 case OpcodeType.Shift:
                 case OpcodeType.AddSub:
                 case OpcodeType.Arithmetic:
-                    return (byte?)Bit.GetBits(Value, 22, 3);
+                    return (byte)Bit.GetBits(Value, 22, 3);
                 case OpcodeType.HiRegister:
                 case OpcodeType.BranchRegister:
-                    return (byte?)Bit.GetBits(Value, 23, 4);
+                    return (byte)Bit.GetBits(Value, 23, 4);
                 case OpcodeType.LoadStoreReg:
-                    return IsStore() ? (byte?)Bit.GetBits(Value, 22, 3) : (byte?)Bit.GetBits(Value, 19, 3);
+                    return IsStore() ? (byte)Bit.GetBits(Value, 19, 3) : (byte)Bit.GetBits(Value, 22, 3);
                 case OpcodeType.LoadStoreImmediate:
-                    return IsStore() ? (byte?)Bit.GetBits(Value, 19, 3) : (byte?)Bit.GetBits(Value, 22, 3);
                 case OpcodeType.LoadStoreHalf:
-                    return IsStore() ? (byte?)Bit.GetBits(Value, 22, 3) : (byte?)Bit.GetBits(Value, 19, 3);
+                    return IsStore() ? (byte)Bit.GetBits(Value, 22, 3) : (byte)Bit.GetBits(Value, 19, 3);
                 case OpcodeType.LoadStoreSP:
-                    return IsStore() ? null : (byte?)Bit.GetBits(Value, 27, 3);
+                    return IsStore() ? (byte)0 : (byte)Bit.GetBits(Value, 27, 3);
                 default:
-                    return null;
+                    return 0;
             }
         }
 
-        public byte? GetRegD()
+        public byte GetRegD()
         {
             switch (Type)
             {
                 case OpcodeType.Shift:
                 case OpcodeType.AddSub:
                 case OpcodeType.Arithmetic:
-                    return (byte?)Bit.GetBits(Value, 19, 3);
+                    return (byte)Bit.GetBits(Value, 19, 3);
 
                 case OpcodeType.Immediate:
-                    return (byte?)Bit.GetBits(Value, 27, 3);
+                    return (byte)Bit.GetBits(Value, 27, 3);
 
                 case OpcodeType.HiRegister:
-                    return (byte?)(Bit.GetBit(Value, 23) << 3 | Bit.GetBits(Value, 19, 3));
+                    return (byte)(Bit.GetBit(Value, 23) << 3 | Bit.GetBits(Value, 19, 3));
 
                 case OpcodeType.LoadStoreReg:
                 case OpcodeType.LoadStoreImmediate:
                 case OpcodeType.LoadStoreHalf:
-                    return IsStore() ? (byte?)Bit.GetBits(Value, 22, 3) : (byte?)Bit.GetBits(Value, 19, 3);
+                    return IsStore() ? (byte)Bit.GetBits(Value, 22, 3) : (byte)Bit.GetBits(Value, 19, 3);
 
                 case OpcodeType.LoadStoreSP:
-                    return IsStore() ? null : (byte?)Bit.GetBits(Value, 27, 3);
+                    return IsStore() ? (byte)0 : (byte)Bit.GetBits(Value, 27, 3);
 
                 case OpcodeType.AddPCSP:
-                    return (byte?)Bit.GetBits(Value, 27, 3);
+                    return (byte)Bit.GetBits(Value, 27, 3);
 
                 default:
-                    return null;
+                    return 0;
             }
         }
 
-        public byte? GetRegR()
+        public byte GetRegR()
         {
             switch (Type)
             {
                 case OpcodeType.AddSub:
                     if (SubType == SubOpcodeType.addRR || SubType == SubOpcodeType.subRR)
-                        return (byte?)Bit.GetBits(Value, 25, 3);
+                        return (byte)Bit.GetBits(Value, 25, 3);
                     else
-                        return null;
+                        return 0;
 
                 case OpcodeType.LoadStoreReg:
-                    return (byte?)Bit.GetBits(Value, 24, 3);
+                    return (byte)Bit.GetBits(Value, 25, 3);
 
                 default:
-                    return null;
+                    return 0;
             }
         }
 
@@ -678,46 +676,13 @@ namespace Sudo_ARM
 
         public CPUFlags GetAffectedFlags()
         {
-            switch (SubType)
+            return SubType switch
             {
-                case SubOpcodeType.movI:
-                case SubOpcodeType.mvn:
-                case SubOpcodeType.and:
-                case SubOpcodeType.tst:
-                case SubOpcodeType.bic:
-                case SubOpcodeType.orr:
-                case SubOpcodeType.eor:
-                    return CPUFlags.Negative | CPUFlags.Zero;
-
-                case SubOpcodeType.lslRI:
-                case SubOpcodeType.lslR:
-                case SubOpcodeType.lsrRI:
-                case SubOpcodeType.lsrR:
-                case SubOpcodeType.asrRI:
-                case SubOpcodeType.asrR:
-                case SubOpcodeType.ror:
-                case SubOpcodeType.mul:
-                    return CPUFlags.Negative | CPUFlags.Zero | CPUFlags.Carry;
-
-                case SubOpcodeType.addRI:
-                case SubOpcodeType.addI:
-                case SubOpcodeType.addRR:
-                case SubOpcodeType.adc:
-                case SubOpcodeType.subRI:
-                case SubOpcodeType.subI:
-                case SubOpcodeType.subRR:
-                case SubOpcodeType.sbc:
-                case SubOpcodeType.neg:
-                case SubOpcodeType.cmp:
-                case SubOpcodeType.cmpI:
-                case SubOpcodeType.cmpR:
-                case SubOpcodeType.cmn:
-                case SubOpcodeType.movR:
-                    return CPUFlags.Negative | CPUFlags.Zero | CPUFlags.Carry | CPUFlags.Overflow;
-
-                default:
-                    return CPUFlags.None;
-            }
+                SubOpcodeType.movI or SubOpcodeType.mvn or SubOpcodeType.and or SubOpcodeType.tst or SubOpcodeType.bic or SubOpcodeType.orr or SubOpcodeType.eor => CPUFlags.Negative | CPUFlags.Zero,
+                SubOpcodeType.lslRI or SubOpcodeType.lslR or SubOpcodeType.lsrRI or SubOpcodeType.lsrR or SubOpcodeType.asrRI or SubOpcodeType.asrR or SubOpcodeType.ror or SubOpcodeType.mul => CPUFlags.Negative | CPUFlags.Zero | CPUFlags.Carry,
+                SubOpcodeType.addRI or SubOpcodeType.addI or SubOpcodeType.addRR or SubOpcodeType.adc or SubOpcodeType.subRI or SubOpcodeType.subI or SubOpcodeType.subRR or SubOpcodeType.sbc or SubOpcodeType.neg or SubOpcodeType.cmp or SubOpcodeType.cmpI or SubOpcodeType.cmpR or SubOpcodeType.cmn or SubOpcodeType.movR => CPUFlags.Negative | CPUFlags.Zero | CPUFlags.Carry | CPUFlags.Overflow,
+                _ => CPUFlags.None,
+            };
         }
 
         public uint Assemble(bool littleEndian)
@@ -917,7 +882,7 @@ namespace Sudo_ARM
                 case SubOpcodeType.lsrRI:
                     return $"lsr r{RegD},r{RegS},#0x{Immediate:X}";
                 case SubOpcodeType.asrRI:
-                    return $"r{RegD},r{RegS},#0x{Immediate:X}";
+                    return $"asr r{RegD},r{RegS},#0x{Immediate:X}";
 
                 case SubOpcodeType.addRR:
                     return $"add r{RegD},r{RegS},r{RegR}";
@@ -983,7 +948,7 @@ namespace Sudo_ARM
                     return $"bx r{RegS}";
 
                 case SubOpcodeType.ldrPC:
-                    return $"ldr r{RegD},[pc,#0x{Immediate:X}";
+                    return $"ldr r{RegD},[pc,#0x{Immediate:X}]";
 
                 case SubOpcodeType.strR:
                     return $"str r{RegS},[r{RegD},r{RegR}]";

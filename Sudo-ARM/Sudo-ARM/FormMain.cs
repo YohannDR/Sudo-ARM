@@ -19,10 +19,7 @@ namespace Sudo_ARM
 
         private void FormMain_Load(object sender, EventArgs e)
         {
-            Opcode opcode = new Opcode(0x00A4);
-            Console.WriteLine(opcode);
-            Console.WriteLine(Convert.ToString(opcode.Assemble(false), 16));
-            Console.WriteLine(Convert.ToString(opcode.Assemble(true), 16));
+
         }
 
         private void btnDisassemble_Click(object sender, EventArgs e)
