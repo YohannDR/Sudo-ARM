@@ -235,13 +235,18 @@ namespace Sudo_ARM
         public byte RegS;
         public byte RegR;
         public byte[] RegList;
-        public ushort? Immediate;
+        public ushort Immediate;
 
         public Opcode(uint value)
         {
             Value = Bit.SwitchEndian(value);
             Type = GetOpcodeType();
             SubType = GetSubOpcodeType();
+            if (SubType == SubOpcodeType.Undefined)
+            {
+                Type = OpcodeType.Undefined;
+                return;
+            }
             Immediate = GetImmediate();
             ConvertImmediate();
             RegS = GetRegS();
@@ -283,7 +288,7 @@ namespace Sudo_ARM
                     return OpcodeType.LoadStoreImmediate;
 
                 case 4: // 0b100
-                    if (Bit.GetBit(Value, 29) == 0)
+                    if (Bit.GetBit(Value, 28) == 0)
                         return OpcodeType.LoadStoreHalf;
                     else
                         return OpcodeType.LoadStoreSP;
@@ -302,7 +307,7 @@ namespace Sudo_ARM
                 case 6: // 0b110
                     if (Bit.GetBit(Value, 28) == 1)
                     {
-                        if (Bit.GetBits(Value, 27, 4) == 7)
+                        if (Bit.GetBits(Value, 28, 4) == 15)
                             return OpcodeType.Interrupt;
                         else
                             return OpcodeType.CondBranch;
@@ -390,7 +395,7 @@ namespace Sudo_ARM
                         return SubOpcodeType.cmpR;
                     else if (sub == 2)
                     {
-                        if (Value == 3225812992)
+                        if (Value == 1186988032)
                             return SubOpcodeType.nop;
                         else
                             return SubOpcodeType.movR;
@@ -430,28 +435,28 @@ namespace Sudo_ARM
                         return SubOpcodeType.ldrbI;
 
                 case OpcodeType.LoadStoreHalf:
-                    sub = Bit.GetBit(Value, 28);
+                    sub = Bit.GetBit(Value, 27);
                     if (sub == 0)
                         return SubOpcodeType.strhI;
                     else
                         return SubOpcodeType.ldrhI;
 
                 case OpcodeType.LoadStoreSP:
-                    sub = Bit.GetBit(Value, 28);
+                    sub = Bit.GetBit(Value, 27);
                     if (sub == 0)
                         return SubOpcodeType.strSP;
                     else
                         return SubOpcodeType.ldrSP;
 
                 case OpcodeType.AddPCSP:
-                    sub = Bit.GetBit(Value, 28);
+                    sub = Bit.GetBit(Value, 27);
                     if (sub == 0)
                         return SubOpcodeType.addPCR;
                     else
                         return SubOpcodeType.addSPR;
 
                 case OpcodeType.AddSP:
-                    sub = Bit.GetBit(Value, 24);
+                    sub = Bit.GetBit(Value, 23);
                     if (sub == 0)
                         return SubOpcodeType.addSP;
                     else
@@ -526,7 +531,7 @@ namespace Sudo_ARM
                     if (SubType == SubOpcodeType.addRR || SubType == SubOpcodeType.subRR)
                         return 0;
                     else
-                        return (ushort)Bit.GetBits(Value, 24, 3);
+                        return (ushort)Bit.GetBits(Value, 25, 3);
 
                 case OpcodeType.LoadStoreImmediate:
                 case OpcodeType.LoadStoreHalf:
@@ -537,9 +542,10 @@ namespace Sudo_ARM
                 case OpcodeType.LoadStoreSP:
                 case OpcodeType.CondBranch:
                 case OpcodeType.Interrupt:
+                case OpcodeType.AddPCSP:
                     return (ushort)((Value & 0xFF0000) >> 16);
                 case OpcodeType.AddSP:
-                    return (ushort)(Bit.GetBits(Value, 23, 7));
+                    return (ushort)Bit.GetBits(Value, 23, 7);
                 case OpcodeType.Branch:
                 case OpcodeType.BranchLink:
                     return (ushort)((Value & 0x7FF0000) >> 16);
@@ -597,10 +603,9 @@ namespace Sudo_ARM
                 case OpcodeType.BranchRegister:
                     return (byte)Bit.GetBits(Value, 23, 4);
                 case OpcodeType.LoadStoreReg:
-                    return IsStore() ? (byte)Bit.GetBits(Value, 19, 3) : (byte)Bit.GetBits(Value, 22, 3);
                 case OpcodeType.LoadStoreImmediate:
                 case OpcodeType.LoadStoreHalf:
-                    return IsStore() ? (byte)Bit.GetBits(Value, 22, 3) : (byte)Bit.GetBits(Value, 19, 3);
+                    return IsStore() ? (byte)Bit.GetBits(Value, 19, 3) : (byte)Bit.GetBits(Value, 22, 3);
                 case OpcodeType.LoadStoreSP:
                     return IsStore() ? (byte)0 : (byte)Bit.GetBits(Value, 27, 3);
                 default:
@@ -1023,7 +1028,7 @@ namespace Sudo_ARM
 
                     return pop.ToString();
                 case SubOpcodeType.popPC:
-                    StringBuilder popPC = new("push ");
+                    StringBuilder popPC = new("pop ");
                     for (int i = 0; i < RegList.Length; i++)
                         popPC.Append('r').Append(RegList[i]).Append(',');
                     popPC.Append("pc");

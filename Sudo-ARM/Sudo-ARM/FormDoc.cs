@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Sudo_ARM
@@ -16,7 +9,7 @@ namespace Sudo_ARM
 
         public static readonly string[] OpcodeDescriptions = new string[]
         {
-            "Undefined opcode",
+            "Undefined opcode (combinaison of bits that aren't mapped to any instruction), will crash the console",
             "Left bit shift on rS by I, result is stored in rD",
             "Right bit shift on rS by I, result is stored in rD",
             "Right arithmetic bit shift on rS by I, result is stored in rD",
@@ -121,7 +114,7 @@ namespace Sudo_ARM
             "neg rD,rS",
             "cmp rD,rS",
             "cmn rD,rS",
-            "orR rD,rS",
+            "orr rD,rS",
             "mul rD,rS",
             "bic rD,rS",
             "mvn rD,rS",
@@ -164,6 +157,7 @@ namespace Sudo_ARM
             "bmi i",
             "bpl i",
             "bvs i",
+            "bvc i",
             "bhi i",
             "bls i",
             "bge i",
@@ -175,83 +169,109 @@ namespace Sudo_ARM
             "bl i"
         };
 
-        public static readonly uint[] OpcodeHexTemplates = new uint[]
+        public static readonly Opcode[] OpcodeObjectTemplates = new Opcode[]
         {
-            /*0x0047, // Undefined
-            0x0006, // lsl r0,r0,#0x18
-            0x000E, // lsr r0,r0,#0x18
-            0x0016, // asr r0,r0,#0x18
-            0x8818, // add r0,r1,r2
-            0x881A, // sub r0,r1,r2
-            0x481D, // add r0,r1,#0x5
-            0x481F, // sub r0,r1,#0x5
-            0x5020, // mov r0,#0x50
-            0x5030, // add r0,#0x50
-            0x5038, // sub r0,#0x50
-            0x5028, // cmp r0,#0x50
-            0x0840, // and r0,r1
-            0x4840, // eor r0,r1
-            0x8840, // lsl r0,r1
-            0xC840, // lsr r0,r1
-            0x0841, // asr r0,r1
-            0x4841, // adc r0,r1
-            0x8841, // sbc r0,r1
-            0xC841, // ror r0,r1
-            0x0842, // tst r0,r1
-            0x4842, // neg r0,r1
-            0x8842, // cmp r0,r1
-            0xC842, // cmn r0,r1
-            0x0843, // orr r0,r1
-            0x4843, // mul r0,r1
-            0x8843, // bic r0,r1
-            0xC843, // mvn r0,r1
-            0xC844, // add r8,r9
-            0xC845, // cmp r8,r9
-            0xC846, // mov r8,r9
-            0xC046, // nop
-            0x0047, // bx r0
-            0x1048, // ldr r0,[pc,#0x40]
-            0x8850, // str r0,[r1,r2]
-            0x8852, // strh r0,[r1,r2]
-            0x8854, // strb r0,[r1,r2]
-            0x8856, // ldsb r0,[r1,r2]
-            0x8858, // ldr r0,[r1,r2]
-            0x885A, // ldrh r0,[r1,r2]
-            0x885C, // ldrb r0,[r1,r2]
-            0x885E, // ldsh r0,[r1,r2]
-            0x0861, // str r0,[r1,#0x10]
-            0x0869, // ldr r0,[r1,#0x10]
-            0x0874, // strb r0,[r1,#0x10]
-            0x087C, // ldrb r0,[r1,#0x10]
-            0x0882, // strh r0,[r1,#0x10]
-            0x088A, // ldrh r0,[r1,#0x10]
-            0x04A0, // add r0,pc,#0x10
-            0x04A8, // add r0,sp,#0x10
-            0x04B0, // add sp,#0x10
-            0x84B0, // sub sp,#0x10
-            0x30B4, // push r4,r5
-            0x30B5, // push r4,r5,r14
-            0x30BC, // pop r4,r5
-            0x30BD, // pop r4,r5,pc
-            0x303D, // stmia r0!,{r4,r5}
-            0x30C0, // ldmia r0!,{r4,r5}
-            0xC5D0, // beq ?
-            0xC4D1, // bne ?
-            0xC3D2, // bcs ?
-            0xC2D3, // bcc ?
-            0xC1D4, // bmi ?
-            0xC0D5, // bpl ?
-            0xBFD9, // bvs ?
-            0xBED7, // bvc ?
-            0xBDD8, // bhi ?
-            0xBCD9, // bls ?
-            0xBBDA, // bge ?
-            0xBADB, // blt ?
-            0xB9DA, // bgt ?
-            0xB8DD, // ble ?
-            0x00DF, // swi #0x0
-            0xB6E7, // b ?
-            0xFFF7B5FF // bl ?*/
+            new Opcode(0x00DE), // Undefined (cond branch with 1110 for sub type)
+            new Opcode(0x0006), // lsl r0,r0,#0x18
+            new Opcode(0x000E), // lsr r0,r0,#0x18
+            new Opcode(0x0016), // asr r0,r0,#0x18
+            new Opcode(0x8818), // add r0,r1,r2
+            new Opcode(0x881A), // sub r0,r1,r2
+            new Opcode(0x481D), // add r0,r1,#0x5
+            new Opcode(0x481F), // sub r0,r1,#0x5
+            new Opcode(0x5020), // mov r0,#0x50
+            new Opcode(0x5030), // add r0,#0x50
+            new Opcode(0x5038), // sub r0,#0x50
+            new Opcode(0x5028), // cmp r0,#0x50
+            new Opcode(0x0840), // and r0,r1
+            new Opcode(0x4840), // eor r0,r1
+            new Opcode(0x8840), // lsl r0,r1
+            new Opcode(0xC840), // lsr r0,r1
+            new Opcode(0x0841), // asr r0,r1
+            new Opcode(0x4841), // adc r0,r1
+            new Opcode(0x8841), // sbc r0,r1
+            new Opcode(0xC841), // ror r0,r1
+            new Opcode(0x0842), // tst r0,r1
+            new Opcode(0x4842), // neg r0,r1
+            new Opcode(0x8842), // cmp r0,r1
+            new Opcode(0xC842), // cmn r0,r1
+            new Opcode(0x0843), // orr r0,r1
+            new Opcode(0x4843), // mul r0,r1
+            new Opcode(0x8843), // bic r0,r1
+            new Opcode(0xC843), // mvn r0,r1
+            new Opcode(0xC844), // add r8,r9
+            new Opcode(0xC845), // cmp r8,r9
+            new Opcode(0xC846), // mov r8,r9
+            new Opcode(0xC046), // nop
+            new Opcode(0x0047), // bx r0
+            new Opcode(0x1048), // ldr r0,[pc,#0x40] TO FIX
+            new Opcode(0x8850), // str r0,[r1,r2]
+            new Opcode(0x8852), // strh r0,[r1,r2]
+            new Opcode(0x8854), // strb r0,[r1,r2]
+            new Opcode(0x8856), // ldsb r0,[r1,r2]
+            new Opcode(0x8858), // ldr r0,[r1,r2]
+            new Opcode(0x885A), // ldrh r0,[r1,r2]
+            new Opcode(0x885C), // ldrb r0,[r1,r2]
+            new Opcode(0x885E), // ldsh r0,[r1,r2]
+            new Opcode(0x0861), // str r0,[r1,#0x10]
+            new Opcode(0x0869), // ldr r0,[r1,#0x10]
+            new Opcode(0x0874), // strb r0,[r1,#0x10]
+            new Opcode(0x087C), // ldrb r0,[r1,#0x10]
+            new Opcode(0x0882), // strh r0,[r1,#0x10]
+            new Opcode(0x088A), // ldrh r0,[r1,#0x10]
+            new Opcode(0x0490), // str r0,[sp,#0x10]
+            new Opcode(0x0498), // ldr r0,[sp,#0x10]
+            new Opcode(0x04A0), // add r0,pc,#0x10
+            new Opcode(0x04A8), // add r0,sp,#0x10
+            new Opcode(0x04B0), // add sp,#0x10
+            new Opcode(0x84B0), // sub sp,#0x10
+            new Opcode(0x30B4), // push r4,r5
+            new Opcode(0x30B5), // push r4,r5,r14
+            new Opcode(0x30BC), // pop r4,r5
+            new Opcode(0x30BD), // pop r4,r5,pc
+            new Opcode(0x30C0), // stmia r0!,{r4,r5}
+            new Opcode(0x30C8), // ldmia r0!,{r4,r5}
+            new Opcode(0xC3D0), // beq ?
+            new Opcode(0xC2D1), // bne ?
+            new Opcode(0xC1D2), // bcs ?
+            new Opcode(0xC0D3), // bcc ?
+            new Opcode(0xBFD4), // bmi ?
+            new Opcode(0xBED5), // bpl ?
+            new Opcode(0xBDD6), // bvs ?
+            new Opcode(0xBCD7), // bvc ?
+            new Opcode(0xBBD8), // bhi ?
+            new Opcode(0xBAD9), // bls ?
+            new Opcode(0xB9DA), // bge ?
+            new Opcode(0xB8DB), // blt ?
+            new Opcode(0xB7DC), // bgt ?
+            new Opcode(0xB6DD), // ble ?
+            new Opcode(0x00DF), // swi #0x0
+            new Opcode(0xB6E7), // b ?
+            new Opcode(0xFFF7B5FF) // bl ?
+        };
+
+        public static readonly string[] OpcodeTypeDescriptions = new string[]
+        {
+            "Undefined",
+            "Shift",
+            "Add/Substract",
+            "Immediate",
+            "Logical/Arithmetic",
+            "Hi-register",
+            "Branch register",
+            "Load PC relative",
+            "Load/Store with register",
+            "Load/Store with immediate",
+            "Load/Store halfword",
+            "Load/Store stack",
+            "Add PC/SP",
+            "Add/Substract to stack",
+            "Stack operations",
+            "Pseudo DMA",
+            "Conditional branch",
+            "Interrupt",
+            "Branch",
+            "Branch link"
         };
 
         #endregion
@@ -272,12 +292,14 @@ namespace Sudo_ARM
         {
             labelOpcodeDesc.Text = OpcodeDescriptions[(int)CurrentOpcode.SubType];
             tbOpcodeString.Text = CurrentOpcode.ToString();
-            tbOpcodeType.Text = CurrentOpcode.Type.ToString();
+            tbOpcodeType.Text = OpcodeTypeDescriptions[(int)CurrentOpcode.Type];
+            // Console.WriteLine(CurrentOpcode.Type);
+            // Console.WriteLine(Convert.ToString(OpcodeHexTemplates[cbOpcodes.SelectedIndex], 16));
         }
 
         private void cbOpcodes_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CurrentOpcode = new Opcode(OpcodeHexTemplates[cbOpcodes.SelectedIndex]);
+            CurrentOpcode = OpcodeObjectTemplates[cbOpcodes.SelectedIndex];
             UpdateOpcodeInfo();
         }
     }

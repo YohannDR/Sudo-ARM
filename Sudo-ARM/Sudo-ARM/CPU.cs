@@ -32,36 +32,6 @@ namespace Sudo_ARM
         {
             switch (opcode.SubType)
             {
-                case SubOpcodeType.lslRI:
-                    Registers[(int)opcode.RegD] = Registers[(int)opcode.RegS] << (int)opcode.Immediate;
-                    break;
-
-                case SubOpcodeType.lsrRI:
-                    Registers[(int)opcode.RegD] = Registers[(int)opcode.RegS] >> (int)opcode.Immediate;
-                    break;
-
-                case SubOpcodeType.asrRI: // TODO
-                    break;
-
-                case SubOpcodeType.addRR:
-                    Registers[(int)opcode.RegD] = Registers[(int)opcode.RegS] + Registers[(int)opcode.RegR];
-                    break;
-
-                case SubOpcodeType.subRR:
-                    Registers[(int)opcode.RegD] = Registers[(int)opcode.RegS] - Registers[(int)opcode.RegR];
-                    break;
-
-                case SubOpcodeType.addRI:
-                    Registers[(int)opcode.RegD] = Registers[(int)opcode.RegS] + (int)opcode.Immediate;
-                    break;
-
-                case SubOpcodeType.subRI:
-                    Registers[(int)opcode.RegD] = Registers[(int)opcode.RegS] - (int)opcode.Immediate;
-                    break;
-
-                case SubOpcodeType.Undefined:
-                    Crash = true;
-                    break;
             }
         }
     }
