@@ -272,7 +272,7 @@ namespace Sudo_ARM
                 case 2: // 0b010
                     if (Bit.GetBit(Value, 28) == 1)
                         return OpcodeType.LoadStoreReg;
-                    else if (Bit.GetBit(Value, 28) == 1)
+                    else if (Bit.GetBit(Value, 27) == 1)
                         return OpcodeType.LoadPC;
                     else if (Bit.GetBit(Value, 26) == 1)
                     {
@@ -1002,7 +1002,7 @@ namespace Sudo_ARM
                     return $"sub sp,#0x{Immediate:X}";
 
                 case SubOpcodeType.push:
-                    StringBuilder push = new("push ");
+                    StringBuilder push = new("push {");
                     for (int i = 0; i < RegList.Length; i++)
                     {
                         push.Append('r').Append(RegList[i]);
@@ -1010,15 +1010,15 @@ namespace Sudo_ARM
                             push.Append(',');
                     }
 
-                    return push.ToString();
+                    return push.Append('}').ToString();
                 case SubOpcodeType.pushLR:
-                    StringBuilder pushLR = new("push ");
+                    StringBuilder pushLR = new("push {");
                     for (int i = 0; i < RegList.Length; i++)
                         pushLR.Append('r').Append(RegList[i]).Append(',');
-                    pushLR.Append("r14");
+                    pushLR.Append("r14}");
                     return pushLR.ToString();
                 case SubOpcodeType.pop:
-                    StringBuilder pop = new("pop ");
+                    StringBuilder pop = new("pop {");
                     for (int i = 0; i < RegList.Length; i++)
                     {
                         pop.Append('r').Append(RegList[i]);
@@ -1026,12 +1026,12 @@ namespace Sudo_ARM
                             pop.Append(',');
                     }
 
-                    return pop.ToString();
+                    return pop.Append('}').ToString();
                 case SubOpcodeType.popPC:
-                    StringBuilder popPC = new("pop ");
+                    StringBuilder popPC = new("pop {");
                     for (int i = 0; i < RegList.Length; i++)
                         popPC.Append('r').Append(RegList[i]).Append(',');
-                    popPC.Append("pc");
+                    popPC.Append("pc}");
                     return popPC.ToString();
 
                 case SubOpcodeType.stmia:
