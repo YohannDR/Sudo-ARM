@@ -204,7 +204,7 @@ namespace Sudo_ARM
             new Opcode(0xC846), // mov r8,r9
             new Opcode(0xC046), // nop
             new Opcode(0x0047), // bx r0
-            new Opcode(0x1048), // ldr r0,[pc,#0x40] TO FIX
+            new Opcode(0x1048), // ldr r0,[pc,#0x40]
             new Opcode(0x8850), // str r0,[r1,r2]
             new Opcode(0x8852), // strh r0,[r1,r2]
             new Opcode(0x8854), // strb r0,[r1,r2]
@@ -231,23 +231,23 @@ namespace Sudo_ARM
             new Opcode(0x30BD), // pop r4,r5,pc
             new Opcode(0x30C0), // stmia r0!,{r4,r5}
             new Opcode(0x30C8), // ldmia r0!,{r4,r5}
-            new Opcode(0xC3D0), // beq ?
-            new Opcode(0xC2D1), // bne ?
-            new Opcode(0xC1D2), // bcs ?
-            new Opcode(0xC0D3), // bcc ?
-            new Opcode(0xBFD4), // bmi ?
-            new Opcode(0xBED5), // bpl ?
-            new Opcode(0xBDD6), // bvs ?
-            new Opcode(0xBCD7), // bvc ?
-            new Opcode(0xBBD8), // bhi ?
-            new Opcode(0xBAD9), // bls ?
-            new Opcode(0xB9DA), // bge ?
-            new Opcode(0xB8DB), // blt ?
-            new Opcode(0xB7DC), // bgt ?
-            new Opcode(0xB6DD), // ble ?
+            new Opcode(0xC3D0), // beq
+            new Opcode(0xC2D1), // bne
+            new Opcode(0xC1D2), // bcs
+            new Opcode(0xC0D3), // bcc
+            new Opcode(0xBFD4), // bmi
+            new Opcode(0xBED5), // bpl
+            new Opcode(0xBDD6), // bvs
+            new Opcode(0xBCD7), // bvc
+            new Opcode(0xBBD8), // bhi
+            new Opcode(0xBAD9), // bls
+            new Opcode(0xB9DA), // bge
+            new Opcode(0xB8DB), // blt
+            new Opcode(0xB7DC), // bgt
+            new Opcode(0xB6DD), // ble
             new Opcode(0x00DF), // swi #0x0
-            new Opcode(0xB6E7), // b ?
-            new Opcode(0xFFF7B5FF) // bl ?
+            new Opcode(0xB6E7), // b
+            new Opcode(0xFFF7B5FF) // bl
         };
 
         public static readonly string[] OpcodeTypeDescriptions = new string[]
