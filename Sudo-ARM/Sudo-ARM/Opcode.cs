@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace Sudo_ARM
 {
@@ -566,6 +566,7 @@ namespace Sudo_ARM
                 case SubOpcodeType.bpl:
                 case SubOpcodeType.bvs:
                 case SubOpcodeType.bhi:
+                case SubOpcodeType.bls:
                 case SubOpcodeType.bge:
                 case SubOpcodeType.blt:
                 case SubOpcodeType.bgt:
@@ -1131,5 +1132,8 @@ namespace Sudo_ARM
                 _ => false
             };
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Is32Bits() => SubType == SubOpcodeType.bl;
     }
 }

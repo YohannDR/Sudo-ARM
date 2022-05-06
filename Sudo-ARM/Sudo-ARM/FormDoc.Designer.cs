@@ -34,6 +34,10 @@ namespace Sudo_ARM
             this.cbOpcodes = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.gbOpcodeInfo = new System.Windows.Forms.GroupBox();
+            this.tbOpcodeSize = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.tbOpcodeBinary = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.tbOpcodeType = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -92,6 +96,10 @@ namespace Sudo_ARM
             // 
             // gbOpcodeInfo
             // 
+            this.gbOpcodeInfo.Controls.Add(this.tbOpcodeSize);
+            this.gbOpcodeInfo.Controls.Add(this.label6);
+            this.gbOpcodeInfo.Controls.Add(this.tbOpcodeBinary);
+            this.gbOpcodeInfo.Controls.Add(this.label5);
             this.gbOpcodeInfo.Controls.Add(this.tbOpcodeType);
             this.gbOpcodeInfo.Controls.Add(this.label4);
             this.gbOpcodeInfo.Controls.Add(this.label3);
@@ -100,14 +108,48 @@ namespace Sudo_ARM
             this.gbOpcodeInfo.Controls.Add(this.labelOpcodeDesc);
             this.gbOpcodeInfo.Location = new System.Drawing.Point(8, 16);
             this.gbOpcodeInfo.Name = "gbOpcodeInfo";
-            this.gbOpcodeInfo.Size = new System.Drawing.Size(472, 330);
+            this.gbOpcodeInfo.Size = new System.Drawing.Size(472, 444);
             this.gbOpcodeInfo.TabIndex = 1;
             this.gbOpcodeInfo.TabStop = false;
             this.gbOpcodeInfo.Text = "Info";
             // 
+            // tbOpcodeSize
+            // 
+            this.tbOpcodeSize.Location = new System.Drawing.Point(147, 341);
+            this.tbOpcodeSize.Name = "tbOpcodeSize";
+            this.tbOpcodeSize.ReadOnly = true;
+            this.tbOpcodeSize.Size = new System.Drawing.Size(212, 27);
+            this.tbOpcodeSize.TabIndex = 8;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(18, 344);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(43, 20);
+            this.label6.TabIndex = 7;
+            this.label6.Text = "Size :";
+            // 
+            // tbOpcodeBinary
+            // 
+            this.tbOpcodeBinary.Location = new System.Drawing.Point(147, 290);
+            this.tbOpcodeBinary.Name = "tbOpcodeBinary";
+            this.tbOpcodeBinary.ReadOnly = true;
+            this.tbOpcodeBinary.Size = new System.Drawing.Size(212, 27);
+            this.tbOpcodeBinary.TabIndex = 4;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(18, 290);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(123, 20);
+            this.label5.TabIndex = 6;
+            this.label5.Text = "Binary Template :";
+            // 
             // tbOpcodeType
             // 
-            this.tbOpcodeType.Location = new System.Drawing.Point(116, 38);
+            this.tbOpcodeType.Location = new System.Drawing.Point(116, 35);
             this.tbOpcodeType.Name = "tbOpcodeType";
             this.tbOpcodeType.ReadOnly = true;
             this.tbOpcodeType.Size = new System.Drawing.Size(203, 27);
@@ -125,7 +167,7 @@ namespace Sudo_ARM
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(18, 272);
+            this.label3.Location = new System.Drawing.Point(18, 396);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(73, 20);
             this.label3.TabIndex = 3;
@@ -133,10 +175,10 @@ namespace Sudo_ARM
             // 
             // tbOpcodeString
             // 
-            this.tbOpcodeString.Location = new System.Drawing.Point(116, 269);
+            this.tbOpcodeString.Location = new System.Drawing.Point(147, 393);
             this.tbOpcodeString.Name = "tbOpcodeString";
             this.tbOpcodeString.ReadOnly = true;
-            this.tbOpcodeString.Size = new System.Drawing.Size(203, 27);
+            this.tbOpcodeString.Size = new System.Drawing.Size(212, 27);
             this.tbOpcodeString.TabIndex = 2;
             // 
             // label1
@@ -200,5 +242,9 @@ namespace Sudo_ARM
         private System.Windows.Forms.TextBox tbOpcodeType;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox tbOpcodeBinary;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox tbOpcodeSize;
+        private System.Windows.Forms.Label label6;
     }
 }

@@ -274,6 +274,87 @@ namespace Sudo_ARM
             "Branch link"
         };
 
+        public static readonly string[] OpcodeBinaryTemplates = new string[]
+        {
+            "Undefined",
+            "000 00 iiiii sss ddd",
+            "000 01 iiiii sss ddd",
+            "000 10 iiiii sss ddd",
+            "00011 00 rrr sss ddd",
+            "00011 01 rrr sss ddd",
+            "00011 10 iii sss ddd",
+            "00011 11 iii sss ddd",
+            "001 00 ddd iiiiiiii",
+            "001 01 ddd iiiiiiii",
+            "001 10 ddd iiiiiiii",
+            "001 11 ddd iiiiiiii",
+            "010000 0000 sss ddd",
+            "010000 0001 sss ddd",
+            "010000 0010 sss ddd",
+            "010000 0011 sss ddd",
+            "010000 0100 sss ddd",
+            "010000 0101 sss ddd",
+            "010000 0110 sss ddd",
+            "010000 0111 sss ddd",
+            "010000 1000 sss ddd",
+            "010000 1001 sss ddd",
+            "010000 1010 sss ddd",
+            "010000 1011 sss ddd",
+            "010000 1100 sss ddd",
+            "010000 1101 sss ddd",
+            "010000 1110 sss ddd",
+            "010000 1111 sss ddd",
+            "010001 00 d s sss ddd",
+            "010001 01 d s sss ddd",
+            "010001 10 d s sss ddd",
+            "010001 10 1 1 000 000",
+            "010001110 ssss 000",
+            "01001 ddd iiiiiiii",
+            "0101 000 rrr ddd sss",
+            "0101 001 rrr ddd sss",
+            "0101 010 rrr ddd sss",
+            "0101 011 rrr sss ddd",
+            "0101 100 rrr sss ddd",
+            "0101 101 rrr sss ddd",
+            "0101 110 rrr sss ddd",
+            "0101 111 rrr sss ddd",
+            "011 00 iiiii ddd sss",
+            "011 01 iiiii sss ddd",
+            "011 10 iiiii ddd sss",
+            "011 11 iiiii sss ddd",
+            "1000 0 iiiii ddd sss",
+            "1000 1 iiiii ddd sss",
+            "1001 0 sss iiiiiiii",
+            "1001 1 ddd iiiiiiii",
+            "1010 0 ddd iiiiiiii",
+            "1010 1 ddd iiiiiiii",
+            "10110000 0 iiiiiii",
+            "10110000 1 iiiiiii",
+            "1011 01 00 dddddddd",
+            "1011 01 01 dddddddd",
+            "1011 11 00 dddddddd",
+            "1011 11 01 dddddddd",
+            "1100 0 ddd ssssssss",
+            "1100 1 sss dddddddd",
+            "1101 0000 iiiiiiii",
+            "1101 0001 iiiiiiii",
+            "1101 0010 iiiiiiii",
+            "1101 0011 iiiiiiii",
+            "1101 0100 iiiiiiii",
+            "1101 0101 iiiiiiii",
+            "1101 0110 iiiiiiii",
+            "1101 0111 iiiiiiii",
+            "1101 1000 iiiiiiii",
+            "1101 1001 iiiiiiii",
+            "1101 1010 iiiiiiii",
+            "1101 1011 iiiiiiii",
+            "1101 1100 iiiiiiii",
+            "1101 1101 iiiiiiii",
+            "11011111 iiiiiiii",
+            "11100 iiiiiiiiiii",
+            "11110 iiiiiiiiiii 11111 iiiiiiiiiii"
+        };
+
         #endregion
 
         FormMain Master;
@@ -293,6 +374,8 @@ namespace Sudo_ARM
             labelOpcodeDesc.Text = OpcodeDescriptions[(int)CurrentOpcode.SubType];
             tbOpcodeString.Text = CurrentOpcode.ToString();
             tbOpcodeType.Text = OpcodeTypeDescriptions[(int)CurrentOpcode.Type];
+            tbOpcodeBinary.Text = OpcodeBinaryTemplates[(int)CurrentOpcode.SubType];
+            tbOpcodeSize.Text = CurrentOpcode.Is32Bits() ? "32 bits" : "16 bits";
             // Console.WriteLine(CurrentOpcode.Type);
             // Console.WriteLine(Convert.ToString(OpcodeHexTemplates[cbOpcodes.SelectedIndex], 16));
         }
