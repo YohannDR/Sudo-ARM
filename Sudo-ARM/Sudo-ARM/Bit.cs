@@ -29,5 +29,9 @@ namespace Sudo_ARM
 
             return result;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckFits(uint value, byte size)
+            => value < Math.Pow(2, size);
     }
 }

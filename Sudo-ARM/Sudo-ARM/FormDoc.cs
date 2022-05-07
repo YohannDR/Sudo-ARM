@@ -180,9 +180,9 @@ namespace Sudo_ARM
             new Opcode(0x481D), // add r0,r1,#0x5
             new Opcode(0x481F), // sub r0,r1,#0x5
             new Opcode(0x5020), // mov r0,#0x50
+            new Opcode(0x5028), // cmp r0,#0x50
             new Opcode(0x5030), // add r0,#0x50
             new Opcode(0x5038), // sub r0,#0x50
-            new Opcode(0x5028), // cmp r0,#0x50
             new Opcode(0x0840), // and r0,r1
             new Opcode(0x4840), // eor r0,r1
             new Opcode(0x8840), // lsl r0,r1
@@ -266,7 +266,7 @@ namespace Sudo_ARM
             "Load/Store stack",
             "Add PC/SP",
             "Add/Substract to stack",
-            "Stack operations",
+            "Stack operation",
             "Pseudo DMA",
             "Conditional branch",
             "Interrupt",
@@ -376,8 +376,11 @@ namespace Sudo_ARM
             tbOpcodeType.Text = OpcodeTypeDescriptions[(int)CurrentOpcode.Type];
             tbOpcodeBinary.Text = OpcodeBinaryTemplates[(int)CurrentOpcode.SubType];
             tbOpcodeSize.Text = CurrentOpcode.Is32Bits() ? "32 bits" : "16 bits";
-            // Console.WriteLine(CurrentOpcode.Type);
-            // Console.WriteLine(Convert.ToString(OpcodeHexTemplates[cbOpcodes.SelectedIndex], 16));
+
+            clbOpcodeFlags.SetItemChecked(0, (CurrentOpcode.AffectedFlags & CPUFlags.Overflow) != 0);
+            clbOpcodeFlags.SetItemChecked(1, (CurrentOpcode.AffectedFlags & CPUFlags.Carry) != 0);
+            clbOpcodeFlags.SetItemChecked(2, (CurrentOpcode.AffectedFlags & CPUFlags.Zero) != 0);
+            clbOpcodeFlags.SetItemChecked(3, (CurrentOpcode.AffectedFlags & CPUFlags.Negative) != 0);
         }
 
         private void cbOpcodes_SelectedIndexChanged(object sender, EventArgs e)

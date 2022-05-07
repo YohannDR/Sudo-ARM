@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Linq;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Sudo_ARM
@@ -229,13 +232,26 @@ namespace Sudo_ARM
         public OpcodeType Type;
         public SubOpcodeType SubType;
         public byte Cycles;
-        public byte Size;
         public CPUFlags AffectedFlags;
         public byte RegD;
         public byte RegS;
         public byte RegR;
         public byte[] RegList;
         public ushort Immediate;
+
+        public Opcode(OpcodeType type, SubOpcodeType subType, byte regD, byte regS, byte regR, ushort immediate, byte[] regList)
+        {
+            Type = type;
+            SubType = subType;
+            RegD = regD;
+            RegS = regS;
+            RegR = regR;
+            Immediate = immediate;
+            RegList = regList;
+            AffectedFlags = GetAffectedFlags();
+            Value = Assemble(true);
+            if (SubType != SubOpcodeType.bl) Value >>= 16;
+        }
 
         public Opcode(uint value)
         {
@@ -1135,5 +1151,432 @@ namespace Sudo_ARM
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Is32Bits() => SubType == SubOpcodeType.bl;
+
+        public static Opcode Parse(string text)
+        {
+            OpcodeType type = OpcodeType.Undefined;
+            SubOpcodeType subType = SubOpcodeType.Undefined;
+            byte regS = 0;
+            byte regD = 0;
+            byte regR = 0;
+            byte[] regList = null;
+            ushort immediate = 0;
+
+            string[] data = text.Split(new char[] { ' ', ',' } );
+            int count = data.Length;
+
+            switch (data[0])
+            {
+                case "lsl":
+                    if (count == 3)
+                    {
+                        type = OpcodeType.Arithmetic;
+                        subType = SubOpcodeType.lslR;
+                    }
+                    else
+                    {
+                        type = OpcodeType.Shift;
+                        subType = SubOpcodeType.lslRI;
+                    }
+                    break;
+
+                case "lsr":
+                    if (count == 3)
+                    {
+                        type = OpcodeType.Arithmetic;
+                        subType = SubOpcodeType.lsrR;
+                    }
+                    else
+                    {
+                        type = OpcodeType.Shift;
+                        subType = SubOpcodeType.lsrRI;
+                    }
+                    break;
+
+                case "asr":
+                    if (count == 3)
+                    {
+                        type = OpcodeType.Arithmetic;
+                        subType = SubOpcodeType.asrR;
+                    }
+                    else
+                    {
+                        type = OpcodeType.Shift;
+                        subType = SubOpcodeType.asrRI;
+                    }
+                    break;
+
+                case "add":
+                    if (count < 2)
+                        throw new ParsingException(ParsingErrorID.IncompleteOpcode, "Incomplete opcode");
+                    if (data[1].Contains('r'))
+                    {
+                        regD = ParseReg(data[1], 3);
+                        if(count == 3)
+                        {
+                            if(data[2].Contains('r'))
+                            {
+                                type = OpcodeType.HiRegister;
+                                subType = SubOpcodeType.addR;
+                                regS = ParseReg(data[2], 3);
+                            }
+                            else
+                            {
+                                type = OpcodeType.Immediate;
+                                subType = SubOpcodeType.addI;
+                                immediate = ParseImmediate(data[2], 8, 0);
+                            }
+                        }
+                        else
+                        {
+                            CheckIsOpcodeComplete(data, 4);
+                            if (data[2].Contains('r'))
+                            {
+                                type = OpcodeType.AddSub;
+                                regS = ParseReg(data[2], 3);
+                                if (data[3].Contains('r'))
+                                {
+                                    subType = SubOpcodeType.addRR;
+                                    regR = ParseReg(data[3], 3);
+                                }
+                                else
+                                {
+                                    subType = SubOpcodeType.addRI;
+                                    immediate = ParseImmediate(data[3], 3, 0);
+                                }
+                            }
+                            else
+                            {
+                                type = OpcodeType.AddPCSP;
+                                immediate = ParseImmediate(data[3], 8, 4);
+                                if (data[2] == "pc")
+                                    subType = SubOpcodeType.addPCR;
+                                else if (data[2] == "sp")
+                                    subType = SubOpcodeType.addSPR;
+                            }
+                        }
+                    }
+                    else if (data[1] == "sp")
+                    {
+                        CheckIsOpcodeComplete(data, 3);
+                        type = OpcodeType.AddSP;
+                        subType = SubOpcodeType.addSP;
+                        immediate = ParseImmediate(data[2], 7, 4);
+                    }
+                    break;
+
+                case "sub":
+                    if (count == 4)
+                    {
+                        type = OpcodeType.AddSub;
+                        regD = ParseReg(data[1], 3);
+                        regS = ParseReg(data[2], 3);
+                        if (data[3].Contains('r'))
+                        {
+                            subType = SubOpcodeType.subRR;
+                            regR = ParseReg(data[3], 3);
+                        }
+                        else
+                        {
+                            subType = SubOpcodeType.subRI;
+                            immediate = ParseImmediate(data[3], 3, 0);
+                        }
+                    }
+                    else
+                    {
+                        CheckIsOpcodeComplete(data, 3);
+                        
+                        if (data[1] == "sp")
+                        {
+                            type = OpcodeType.AddSP;
+                            subType = SubOpcodeType.subSP;
+                            immediate = ParseImmediate(data[2], 8, 4);
+                        }
+                        else
+                        {
+                            type = OpcodeType.Immediate;
+                            subType = SubOpcodeType.subI;
+                            regD = ParseReg(data[1], 3);
+                            immediate = ParseImmediate(data[2], 8, 0);
+                        }
+                    }
+                    break;
+
+                case "mov":
+                    CheckIsOpcodeComplete(data, 3);
+                    if (data[2].Contains('r'))
+                    {
+                        type = OpcodeType.HiRegister;
+                        subType = SubOpcodeType.movR;
+                        regD = ParseReg(data[1], 4);
+                        regS = ParseReg(data[2], 4);
+                    }
+                    else
+                    {
+                        type = OpcodeType.Immediate;
+                        subType = SubOpcodeType.movI;
+                        regD = ParseReg(data[1], 3);
+                        immediate = ParseImmediate(data[2], 8, 0);
+                    }
+                    break;
+
+                case "cmp":
+                    CheckIsOpcodeComplete(data, 3);
+                    regD = ParseReg(data[1], 3);
+                    if (data[2].Contains('r'))
+                    {
+                        type = OpcodeType.Immediate;
+                        subType = SubOpcodeType.cmpI;
+                        regS = ParseReg(data[2], 3);
+                    }
+                    else
+                    {
+                        type = OpcodeType.HiRegister;
+                        subType = SubOpcodeType.cmpR;
+                        immediate = ParseImmediate(data[2], 8, 0);
+                    }
+                    break;
+
+                case "and":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.and;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+                case "eor":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.eor;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "adc":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.adc;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "sbc":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.sbc;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "ror":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.ror;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "tst":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.tst;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "neg":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.neg;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "cmn":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.cmn;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "orr":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.orr;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "mul":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.mul;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "bic":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.bic;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "mvn":
+                    CheckIsOpcodeComplete(data, 3);
+                    type = OpcodeType.Arithmetic;
+                    subType = SubOpcodeType.mvn;
+                    regD = ParseReg(data[1], 3);
+                    regS = ParseReg(data[2], 3);
+                    break;
+
+                case "nop":
+                    type = OpcodeType.HiRegister;
+                    subType = SubOpcodeType.nop;
+                    break;
+
+                case "bx":
+                    CheckIsOpcodeComplete(data, 2);
+                    regS = ParseReg(data[1], 4);
+                    type = OpcodeType.BranchRegister;
+                    subType = SubOpcodeType.bx;
+                    break;
+
+                case "str":
+                    // TODO
+                    break;
+
+                case "strh":
+                    // TODO
+                    break;
+
+                case "strb":
+                    // TODO
+                    break;
+
+                case "ldr":
+                    // TODO
+                    break;
+
+                case "ldrh":
+                    // TODO
+                    break;
+
+                case "ldrb":
+                    // TODO
+                    break;
+
+                case "ldsh":
+                case "ldrsh":
+                    // TODO
+                    break;
+
+                case "ldsb":
+                case "ldrsb":
+                    // TODO
+                    break;
+
+                case "push":
+                    type = OpcodeType.Stack;
+                    if (data.Contains("lr") || data.Contains("r14"))
+                        subType = SubOpcodeType.pushLR;
+                    else
+                        subType = SubOpcodeType.push;
+                    break;
+
+                case "pop":
+                    type = OpcodeType.Stack;
+                    if (data.Contains("pc") || data.Contains("r15"))
+                        subType = SubOpcodeType.popPC;
+                    else
+                        subType = SubOpcodeType.pop;
+                    regList = ParseRegList(data.Select(D => D).Where(D => D != "pop").ToArray(), 3);
+                    break;
+
+                case "stmia":
+                    type = OpcodeType.PseudoDMA;
+                    subType = SubOpcodeType.stmia;
+                    break;
+
+                case "ldmia":
+                    type = OpcodeType.PseudoDMA;
+                    subType = SubOpcodeType.ldmia;
+                    break;
+
+                // TODO cond branch
+
+                case "swi":
+                    CheckIsOpcodeComplete(data, 2);
+                    immediate = ParseImmediate(data[1], 8, 0);
+                    type = OpcodeType.Interrupt;
+                    subType = SubOpcodeType.swi;
+                    break;
+
+                case "b":
+                    type = OpcodeType.Branch;
+                    subType = SubOpcodeType.b;
+                    break;
+
+                case "bl":
+                    type = OpcodeType.BranchLink;
+                    subType = SubOpcodeType.bl;
+                    break;
+            }
+
+            if (type != OpcodeType.Undefined && subType != SubOpcodeType.Undefined)
+                return new Opcode(type, subType, regD, regS, regR, immediate, regList);
+            else
+                throw new ParsingException(ParsingErrorID.ParseFail, "Could not parse Opcode");
+        }
+
+        private static void CheckIsOpcodeComplete(string[] array, int length)
+        {
+            if (array.Length != length)
+                throw new ParsingException(ParsingErrorID.IncompleteOpcode, "Opcode isn't complete");
+        }
+
+        private static byte ParseReg(string text, byte size)
+        {
+            if (!Regex.Match(text, @"r\d\d?").Success)
+                throw new ParsingException(ParsingErrorID.InvalidRegisterFormat, "Couldn't parse register, regex failed");
+
+            if (!byte.TryParse(text.Remove(0, 1), out byte value))
+                throw new ParsingException(ParsingErrorID.SyntaxError, "Invalid syntax for the register");
+
+            if (!Bit.CheckFits(value, size))
+                throw new ParsingException(ParsingErrorID.RegisterNumberTooHigh, "Couldn't parse register, doesn't fit in the opcode (too high)");
+
+            return value;
+        }
+
+        private static byte[] ParseRegList(string[] array, byte size)
+        {
+            List<byte> data = new List<byte>(array.Length);
+            foreach (string S in array)
+                if (S != "lr" && S != "r14" && S != "pc" && S != "r15")
+                    data.Add(ParseReg(S, size));
+            return data.ToArray();
+        }
+
+        private static ushort ParseImmediate(string text, byte size, byte multiple)
+        {
+            if (!Regex.Match(text, "#?(0[xX])?[0-9a-fA-F]+h?").Success)
+                throw new ParsingException(ParsingErrorID.InvalidImmediateFormat, "Couldn't parse immediate, regex failed");
+
+            if (!ushort.TryParse(text.Trim(), System.Globalization.NumberStyles.AllowHexSpecifier, null, out ushort value))
+                throw new ParsingException(ParsingErrorID.SyntaxError, "Invalid syntax for the immediate");
+
+            if (multiple != 0 && value % multiple != 0)
+                throw new ParsingException(ParsingErrorID.ImmediateMultipleError, $"Immediate value must be a multiple of {multiple}");
+
+            if (!Bit.CheckFits(value, size))
+                throw new ParsingException(ParsingErrorID.ImmediateTooHigh, $"Immediate value doesn't fit in the opcode (must be below #0x{Convert.ToString((uint)(Math.Pow(2, size) - 1), 16).ToUpper()})");
+
+            return value;
+        }
+
+        public static implicit operator bool(Opcode O) => O is not null;
     }
 }

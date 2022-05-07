@@ -31,5 +31,10 @@ namespace Sudo_ARM
         {
             new FormDoc(this).Show();
         }
+
+        private void btnAnalysis_Click(object sender, EventArgs e)
+        {
+            new FormAnalysis(this).Show();
+        }
     }
 }

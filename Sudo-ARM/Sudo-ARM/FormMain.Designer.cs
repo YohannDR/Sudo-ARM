@@ -31,14 +31,14 @@ namespace Sudo_ARM
         {
             this.btnDisassemble = new System.Windows.Forms.Button();
             this.btnDoc = new System.Windows.Forms.Button();
+            this.btnAnalysis = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnDisassemble
             // 
-            this.btnDisassemble.Location = new System.Drawing.Point(61, 120);
-            this.btnDisassemble.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnDisassemble.Location = new System.Drawing.Point(53, 90);
             this.btnDisassemble.Name = "btnDisassemble";
-            this.btnDisassemble.Size = new System.Drawing.Size(132, 48);
+            this.btnDisassemble.Size = new System.Drawing.Size(116, 36);
             this.btnDisassemble.TabIndex = 0;
             this.btnDisassemble.Text = "Disassemble";
             this.btnDisassemble.UseVisualStyleBackColor = true;
@@ -46,23 +46,32 @@ namespace Sudo_ARM
             // 
             // btnDoc
             // 
-            this.btnDoc.Location = new System.Drawing.Point(61, 236);
-            this.btnDoc.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnDoc.Location = new System.Drawing.Point(53, 177);
             this.btnDoc.Name = "btnDoc";
-            this.btnDoc.Size = new System.Drawing.Size(132, 48);
+            this.btnDoc.Size = new System.Drawing.Size(116, 36);
             this.btnDoc.TabIndex = 1;
             this.btnDoc.Text = "Documentation";
             this.btnDoc.UseVisualStyleBackColor = true;
             this.btnDoc.Click += new System.EventHandler(this.btnDoc_Click);
             // 
+            // btnAnalysis
+            // 
+            this.btnAnalysis.Location = new System.Drawing.Point(243, 90);
+            this.btnAnalysis.Name = "btnAnalysis";
+            this.btnAnalysis.Size = new System.Drawing.Size(116, 36);
+            this.btnAnalysis.TabIndex = 2;
+            this.btnAnalysis.Text = "Analyse";
+            this.btnAnalysis.UseVisualStyleBackColor = true;
+            this.btnAnalysis.Click += new System.EventHandler(this.btnAnalysis_Click);
+            // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(914, 600);
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnAnalysis);
             this.Controls.Add(this.btnDoc);
             this.Controls.Add(this.btnDisassemble);
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "FormMain";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.FormMain_Load);
@@ -74,6 +83,7 @@ namespace Sudo_ARM
 
         private System.Windows.Forms.Button btnDisassemble;
         private System.Windows.Forms.Button btnDoc;
+        private System.Windows.Forms.Button btnAnalysis;
     }
 }
 
